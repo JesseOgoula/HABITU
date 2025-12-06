@@ -1,20 +1,100 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/habit.dart';
+import '../providers/auth_provider.dart';
 import '../providers/habit_provider.dart';
 import '../providers/theme_provider.dart';
 import '../widgets/greeting_header.dart';
 import '../widgets/week_selector.dart';
 import '../widgets/habit_card.dart';
 import 'add_habit_screen.dart';
+import 'auth/auth_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  void _showProfileMenu(BuildContext context) {
+    final authProvider = context.read<AuthProvider>();
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // User info
+            CircleAvatar(
+              radius: 40,
+              backgroundImage: authProvider.avatarUrl != null
+                  ? NetworkImage(authProvider.avatarUrl!)
+                  : null,
+              child: authProvider.avatarUrl == null
+                  ? const Icon(Icons.person, size: 40)
+                  : null,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              authProvider.displayName,
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 24),
+
+            // Logout button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await authProvider.signOut();
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            AuthScreen(nextScreen: const HomeScreen()),
+                      ),
+                      (route) => false,
+                    );
+                  }
+                },
+                icon: const Icon(Icons.logout),
+                label: const Text('Déconnexion'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
       body: SafeArea(
@@ -25,10 +105,12 @@ class HomeScreen extends StatelessWidget {
                 // Header with greeting
                 SliverToBoxAdapter(
                   child: GreetingHeader(
-                    userName: 'User',
+                    userName: authProvider.displayName,
                     habitsCount: habitProvider.totalHabitsCount,
                     tasksCount: 0,
                     meetingsCount: 0,
+                    avatarUrl: authProvider.avatarUrl,
+                    onAvatarTap: () => _showProfileMenu(context),
                   ),
                 ),
 

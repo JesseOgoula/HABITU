@@ -6,6 +6,8 @@ class GreetingHeader extends StatelessWidget {
   final int meetingsCount;
   final int tasksCount;
   final int habitsCount;
+  final String? avatarUrl;
+  final VoidCallback? onAvatarTap;
 
   const GreetingHeader({
     super.key,
@@ -13,6 +15,8 @@ class GreetingHeader extends StatelessWidget {
     this.meetingsCount = 0,
     this.tasksCount = 0,
     this.habitsCount = 0,
+    this.avatarUrl,
+    this.onAvatarTap,
   });
 
   String get _greeting {
@@ -41,13 +45,21 @@ class GreetingHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(_todayDate, style: theme.textTheme.bodyMedium),
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
-                child: Icon(
-                  Icons.person,
-                  color: isDark ? Colors.white : Colors.black,
-                  size: 20,
+              GestureDetector(
+                onTap: onAvatarTap,
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                  backgroundImage: avatarUrl != null
+                      ? NetworkImage(avatarUrl!)
+                      : null,
+                  child: avatarUrl == null
+                      ? Icon(
+                          Icons.person,
+                          color: isDark ? Colors.white : Colors.black,
+                          size: 20,
+                        )
+                      : null,
                 ),
               ),
             ],

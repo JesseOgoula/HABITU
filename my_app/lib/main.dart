@@ -3,8 +3,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
 import 'models/habit.dart';
+import 'providers/auth_provider.dart';
 import 'providers/habit_provider.dart';
 import 'providers/theme_provider.dart';
+import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
 import 'screens/home_screen.dart';
 import 'screens/splash_screen.dart';
@@ -12,19 +14,28 @@ import 'screens/splash_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Supabase
+  await AuthService.initialize();
+
   // Initialize Hive
   await Hive.initFlutter();
   Hive.registerAdapter(HabitAdapter());
 
   // Initialize providers
+  final authProvider = AuthProvider();
   final habitProvider = HabitProvider();
   final themeProvider = ThemeProvider();
 
-  await Future.wait([habitProvider.init(), themeProvider.init()]);
+  await Future.wait([
+    authProvider.init(),
+    habitProvider.init(),
+    themeProvider.init(),
+  ]);
 
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider.value(value: habitProvider),
         ChangeNotifierProvider.value(value: themeProvider),
       ],

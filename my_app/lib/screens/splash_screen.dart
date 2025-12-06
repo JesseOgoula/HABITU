@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import 'auth/auth_screen.dart';
 import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -59,11 +62,23 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (!mounted) return;
 
+    // Check authentication state
+    final authProvider = context.read<AuthProvider>();
+    final isAuthenticated = authProvider.isAuthenticated;
+
     Widget nextScreen;
-    if (onboardingComplete) {
-      nextScreen = widget.homeScreen;
+
+    if (!onboardingComplete) {
+      // First time user: show onboarding, then auth
+      nextScreen = OnboardingScreen(
+        nextScreen: AuthScreen(nextScreen: widget.homeScreen),
+      );
+    } else if (!isAuthenticated) {
+      // Returning user but not logged in: show auth
+      nextScreen = AuthScreen(nextScreen: widget.homeScreen);
     } else {
-      nextScreen = OnboardingScreen(nextScreen: widget.homeScreen);
+      // Logged in user: go to home
+      nextScreen = widget.homeScreen;
     }
 
     Navigator.of(context).pushReplacement(
