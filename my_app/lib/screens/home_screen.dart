@@ -15,13 +15,14 @@ class HomeScreen extends StatelessWidget {
 
   void _showProfileMenu(BuildContext context) {
     final authProvider = context.read<AuthProvider>();
+    final navigator = Navigator.of(context);
 
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
+      builder: (bottomSheetContext) => Container(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -50,7 +51,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               authProvider.displayName,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(bottomSheetContext).textTheme.titleLarge,
             ),
             const SizedBox(height: 24),
 
@@ -59,17 +60,15 @@ class HomeScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () async {
-                  Navigator.pop(context);
+                  Navigator.pop(bottomSheetContext); // Close bottom sheet first
                   await authProvider.signOut();
-                  if (context.mounted) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            AuthScreen(nextScreen: const HomeScreen()),
-                      ),
-                      (route) => false,
-                    );
-                  }
+                  navigator.pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          AuthScreen(nextScreen: const HomeScreen()),
+                    ),
+                    (route) => false,
+                  );
                 },
                 icon: const Icon(Icons.logout),
                 label: const Text('Déconnexion'),
