@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  final Widget nextScreen;
+  final Widget homeScreen;
 
-  const SplashScreen({super.key, required this.nextScreen});
+  const SplashScreen({super.key, required this.homeScreen});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -40,21 +42,39 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    _controller.addStatusListener((status) {
+    _controller.addStatusListener((status) async {
       if (status == AnimationStatus.completed) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                widget.nextScreen,
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-            transitionDuration: const Duration(milliseconds: 300),
-          ),
-        );
+        await _navigateToNextScreen();
       }
     });
+  }
+
+  Future<void> _navigateToNextScreen() async {
+    // Check if onboarding is complete
+    final box = await Hive.openBox('settings');
+    final onboardingComplete = box.get(
+      'onboarding_complete',
+      defaultValue: false,
+    );
+
+    if (!mounted) return;
+
+    Widget nextScreen;
+    if (onboardingComplete) {
+      nextScreen = widget.homeScreen;
+    } else {
+      nextScreen = OnboardingScreen(nextScreen: widget.homeScreen);
+    }
+
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
   }
 
   @override

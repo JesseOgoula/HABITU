@@ -46,7 +46,7 @@ class HabituApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeProvider.themeMode,
-          home: const SplashScreen(nextScreen: HomeScreen()),
+          home: const SplashScreen(homeScreen: HomeScreen()),
         );
       },
     );
