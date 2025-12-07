@@ -2,11 +2,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// A circular progress indicator showing collective completion of a Circle
-/// The ring closes when all members complete their habits
-/// A break in the ring shows who hasn't completed yet
+/// Circle progress ring - minimalist style
 class CircleProgressRing extends StatelessWidget {
-  final double progress; // 0.0 to 1.0
+  final double progress;
   final int totalMembers;
   final int completedMembers;
   final double size;
@@ -45,7 +43,7 @@ class CircleProgressRing extends StatelessWidget {
               painter: _CircleRingPainter(
                 progress: 1.0,
                 color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
-                strokeWidth: 8,
+                strokeWidth: 6,
               ),
             ),
             // Progress ring
@@ -53,11 +51,8 @@ class CircleProgressRing extends StatelessWidget {
               size: Size(size, size),
               painter: _CircleRingPainter(
                 progress: progress,
-                color: isComplete
-                    ? AppTheme.statusCompleted
-                    : AppTheme.accentBlue,
-                strokeWidth: 8,
-                showBreak: !isComplete && progress > 0,
+                color: isDark ? Colors.white : AppTheme.lightText,
+                strokeWidth: 6,
               ),
             ),
             // Center content
@@ -65,25 +60,30 @@ class CircleProgressRing extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (centerEmoji != null)
-                  Text(centerEmoji!, style: TextStyle(fontSize: size * 0.25)),
+                  Text(centerEmoji!, style: TextStyle(fontSize: size * 0.22)),
                 if (circleName != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    circleName!,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                  const SizedBox(height: 2),
+                  SizedBox(
+                    width: size * 0.7,
+                    child: Text(
+                      circleName!,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
                 const SizedBox(height: 2),
                 Text(
                   '$completedMembers/$totalMembers',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: isComplete ? AppTheme.statusCompleted : null,
-                    fontWeight: isComplete ? FontWeight.bold : null,
+                  style: TextStyle(
+                    fontSize: size * 0.09,
+                    color: isDark
+                        ? Colors.grey[400]
+                        : AppTheme.lightTextSecondary,
                   ),
                 ),
               ],
@@ -92,18 +92,22 @@ class CircleProgressRing extends StatelessWidget {
             if (isComplete)
               Positioned(
                 bottom: 0,
-                right: size * 0.15,
+                right: size * 0.18,
                 child: Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
-                    color: AppTheme.statusCompleted,
+                    color: isDark ? Colors.white : AppTheme.lightText,
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isDark ? AppTheme.darkBackground : Colors.white,
                       width: 2,
                     ),
                   ),
-                  child: const Icon(Icons.check, color: Colors.white, size: 12),
+                  child: Icon(
+                    Icons.check,
+                    color: isDark ? AppTheme.darkBackground : Colors.white,
+                    size: 10,
+                  ),
                 ),
               ),
           ],
@@ -117,13 +121,11 @@ class _CircleRingPainter extends CustomPainter {
   final double progress;
   final Color color;
   final double strokeWidth;
-  final bool showBreak;
 
   _CircleRingPainter({
     required this.progress,
     required this.color,
     required this.strokeWidth,
-    this.showBreak = false,
   });
 
   @override
@@ -137,7 +139,6 @@ class _CircleRingPainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    // Draw arc from top (-90 degrees)
     final startAngle = -pi / 2;
     final sweepAngle = 2 * pi * progress;
 
@@ -148,26 +149,6 @@ class _CircleRingPainter extends CustomPainter {
       false,
       paint,
     );
-
-    // Draw break indicator (red dash) if not complete
-    if (showBreak && progress < 1.0) {
-      final breakPaint = Paint()
-        ..color = AppTheme.statusMissed
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round;
-
-      final breakStart = startAngle + sweepAngle;
-      final breakSweep = (2 * pi * 0.05); // Small gap
-
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        breakStart + 0.05,
-        breakSweep,
-        false,
-        breakPaint,
-      );
-    }
   }
 
   @override

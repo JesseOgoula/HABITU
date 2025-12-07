@@ -15,6 +15,9 @@ import '../widgets/circle_progress_ring.dart';
 import '../theme/app_theme.dart';
 import 'add_habit_screen.dart';
 import 'auth/welcome_back_screen.dart';
+import 'habit_detail_screen.dart';
+import 'analytics_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -22,53 +25,56 @@ class HomeScreen extends StatelessWidget {
   void _showProfileMenu(BuildContext context) {
     final authProvider = context.read<AuthProvider>();
     final navigator = Navigator.of(context);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
-          ? AppTheme.darkSurface
-          : Colors.white,
+      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (bottomSheetContext) => Container(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Handle bar
             Container(
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[600],
+                color: Colors.grey[400],
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 24),
-
-            // User info
             CircleAvatar(
               radius: 40,
+              backgroundColor: isDark ? Colors.grey[800] : Colors.grey[200],
               backgroundImage: authProvider.avatarUrl != null
                   ? NetworkImage(authProvider.avatarUrl!)
                   : null,
               child: authProvider.avatarUrl == null
-                  ? const Icon(Icons.person, size: 40)
+                  ? Icon(
+                      Icons.person,
+                      size: 40,
+                      color: isDark ? Colors.white : Colors.grey[600],
+                    )
                   : null,
             ),
             const SizedBox(height: 12),
             Text(
               authProvider.displayName,
-              style: Theme.of(bottomSheetContext).textTheme.titleLarge,
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: 24),
-
-            // Logout button
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () async {
+              child: GestureDetector(
+                onTap: () async {
                   Navigator.pop(bottomSheetContext);
                   await authProvider.signOut();
                   navigator.pushAndRemoveUntil(
@@ -79,14 +85,29 @@ class HomeScreen extends StatelessWidget {
                     (route) => false,
                   );
                 },
-                icon: const Icon(Icons.logout),
-                label: const Text('Déconnexion'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.grey[800] : Colors.grey[100],
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.logout, size: 20, color: Colors.red[400]),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Déconnexion',
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.red[400],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -98,14 +119,12 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // Calculate current streak
   int _calculateStreak(List<Habit> habits) {
     if (habits.isEmpty) return 0;
 
     int streak = 0;
     DateTime checkDate = DateTime.now().subtract(const Duration(days: 1));
 
-    // Start from yesterday to check confirmed days
     for (int i = 0; i < 365; i++) {
       final allCompleted = habits.every((h) => h.isCompletedOn(checkDate));
       if (allCompleted && habits.isNotEmpty) {
@@ -116,7 +135,6 @@ class HomeScreen extends StatelessWidget {
       }
     }
 
-    // Check if today is complete too
     if (habits.every((h) => h.isCompletedOn(DateTime.now()))) {
       streak++;
     }
@@ -132,6 +150,9 @@ class HomeScreen extends StatelessWidget {
     final circleProvider = context.watch<CircleProvider>();
 
     return Scaffold(
+      backgroundColor: isDark
+          ? AppTheme.darkBackground
+          : AppTheme.lightBackground,
       body: SafeArea(
         child: Consumer<HabitProvider>(
           builder: (context, habitProvider, child) {
@@ -142,7 +163,7 @@ class HomeScreen extends StatelessWidget {
 
             return CustomScrollView(
               slivers: [
-                // Header with greeting
+                // Header
                 SliverToBoxAdapter(
                   child: GreetingHeader(
                     userName: authProvider.displayName,
@@ -163,54 +184,56 @@ class HomeScreen extends StatelessWidget {
                 ),
 
                 // Streak Banner
-                SliverToBoxAdapter(
-                  child: StreakBanner(
-                    streak: currentStreak,
-                    onTap: () {
-                      // TODO: Navigate to stats
-                    },
-                  ),
-                ),
+                SliverToBoxAdapter(child: StreakBanner(streak: currentStreak)),
 
                 // Progress and Stats Row
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
+                  child: Container(
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.grey[900] : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                      ),
+                      boxShadow: [
+                        if (!isDark)
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                      ],
+                    ),
                     child: Row(
                       children: [
-                        // Daily progress circle
                         DailyProgressCircle(
                           completed: habitProvider.completedTodayCount,
                           total: habitProvider.totalHabitsCount,
-                          size: 120,
+                          size: 100,
                         ),
-                        const SizedBox(width: 20),
-                        // Stats cards
+                        const SizedBox(width: 24),
                         Expanded(
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildStatCard(
+                              _buildStatRow(
                                 context,
                                 'Habitudes',
                                 '${habitProvider.totalHabitsCount}',
-                                Icons.repeat,
-                                AppTheme.accentBlue,
                               ),
-                              const SizedBox(height: 8),
-                              _buildStatCard(
+                              const SizedBox(height: 10),
+                              _buildStatRow(
                                 context,
                                 'Complétées',
                                 '${habitProvider.completedTodayCount}',
-                                Icons.check_circle_outline,
-                                AppTheme.statusCompleted,
                               ),
-                              const SizedBox(height: 8),
-                              _buildStatCard(
+                              const SizedBox(height: 10),
+                              _buildStatRow(
                                 context,
                                 'Série',
                                 '$currentStreak jours',
-                                Icons.local_fire_department,
-                                const Color(0xFFFF6B35),
                               ),
                             ],
                           ),
@@ -235,9 +258,14 @@ class HomeScreen extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          TextButton(
-                            onPressed: () {},
-                            child: const Text('Voir tout'),
+                          Text(
+                            'Voir tout',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : AppTheme.lightTextSecondary,
+                            ),
                           ),
                         ],
                       ),
@@ -245,7 +273,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                   SliverToBoxAdapter(
                     child: SizedBox(
-                      height: 130,
+                      height: 110,
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -261,7 +289,7 @@ class HomeScreen extends StatelessWidget {
                                   .round(),
                               centerEmoji: circle.emoji ?? '🌍',
                               circleName: circle.name,
-                              size: 100,
+                              size: 90,
                             ),
                           );
                         },
@@ -270,16 +298,16 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
 
-                // Create circle invitation
+                // Create circle card
                 if (myCircles.isEmpty)
                   SliverToBoxAdapter(
                     child: _buildCreateCircleCard(context, isDark),
                   ),
 
-                // Section header for habits
+                // Habits section header
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -307,6 +335,9 @@ class HomeScreen extends StatelessWidget {
                                       ? Icons.light_mode
                                       : Icons.dark_mode,
                                   size: 18,
+                                  color: isDark
+                                      ? Colors.white
+                                      : AppTheme.lightText,
                                 ),
                               ),
                             );
@@ -319,9 +350,8 @@ class HomeScreen extends StatelessWidget {
 
                 // Habits list
                 if (habitProvider.habits.isEmpty)
-                  SliverFillRemaining(child: _buildEmptyState(context))
+                  SliverFillRemaining(child: _buildEmptyState(context, isDark))
                 else ...[
-                  // Anytime habits
                   if (habitProvider.anytimeHabits.isNotEmpty) ...[
                     _buildSectionHeader(
                       context,
@@ -334,8 +364,6 @@ class HomeScreen extends StatelessWidget {
                       habitProvider,
                     ),
                   ],
-
-                  // Morning habits
                   if (habitProvider.morningHabits.isNotEmpty) ...[
                     _buildSectionHeader(
                       context,
@@ -348,8 +376,6 @@ class HomeScreen extends StatelessWidget {
                       habitProvider,
                     ),
                   ],
-
-                  // Evening habits
                   if (habitProvider.eveningHabits.isNotEmpty) ...[
                     _buildSectionHeader(
                       context,
@@ -364,7 +390,6 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ],
 
-                // Bottom padding
                 const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
               ],
             );
@@ -372,55 +397,42 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToAddHabit(context),
-        backgroundColor: AppTheme.accentBlue,
-        child: const Icon(Icons.add, color: Colors.white),
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AddHabitScreen()),
+        ),
+        backgroundColor: isDark ? Colors.white : AppTheme.lightText,
+        foregroundColor: isDark ? AppTheme.darkBackground : Colors.white,
+        child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: _buildBottomNav(context, isDark),
     );
   }
 
-  Widget _buildStatCard(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
+  Widget _buildStatRow(BuildContext context, String label, String value) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.grey[850] : Colors.grey[100],
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 18),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: theme.textTheme.bodyMedium?.color,
-              ),
-            ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: isDark ? Colors.grey[400] : AppTheme.lightTextSecondary,
           ),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.white : AppTheme.lightText,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -429,14 +441,11 @@ class HomeScreen extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.accentBlue.withOpacity(0.15),
-            AppTheme.accentBlue.withOpacity(0.05),
-          ],
+        color: isDark ? Colors.grey[900] : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
         ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.accentBlue.withOpacity(0.3)),
       ),
       child: Row(
         children: [
@@ -444,14 +453,14 @@ class HomeScreen extends StatelessWidget {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: AppTheme.accentBlue.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(10),
+              color: isDark ? Colors.grey[800] : Colors.grey[100],
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Center(
               child: Text('🌍', style: TextStyle(fontSize: 22)),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -468,14 +477,17 @@ class HomeScreen extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: isDark
-                        ? AppTheme.darkTextSecondary
+                        ? Colors.grey[400]
                         : AppTheme.lightTextSecondary,
                   ),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.arrow_forward_ios, size: 16),
+          Icon(
+            Icons.chevron_right,
+            color: isDark ? Colors.grey[600] : Colors.grey[400],
+          ),
         ],
       ),
     );
@@ -486,6 +498,9 @@ class HomeScreen extends StatelessWidget {
     String title,
     IconData icon,
   ) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
@@ -494,10 +509,17 @@ class HomeScreen extends StatelessWidget {
             Icon(
               icon,
               size: 16,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
+              color: isDark ? Colors.grey[400] : AppTheme.lightTextSecondary,
             ),
             const SizedBox(width: 6),
-            Text(title, style: Theme.of(context).textTheme.labelLarge),
+            Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.grey[400] : AppTheme.lightTextSecondary,
+              ),
+            ),
           ],
         ),
       ),
@@ -512,17 +534,23 @@ class HomeScreen extends StatelessWidget {
     return SliverList(
       delegate: SliverChildBuilderDelegate((context, index) {
         final habit = habits[index];
-        return SwipeableHabitCard(
-          habit: habit,
-          isCompleted: provider.isHabitCompleted(habit),
-          onComplete: () => provider.toggleHabitCompletion(habit),
-          onLongPress: () => _showDeleteDialog(context, habit, provider),
+        return GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => HabitDetailScreen(habit: habit)),
+          ),
+          child: SwipeableHabitCard(
+            habit: habit,
+            isCompleted: provider.isHabitCompleted(habit),
+            onComplete: () => provider.toggleHabitCompletion(habit),
+            onLongPress: () => _showDeleteDialog(context, habit, provider),
+          ),
         );
       }, childCount: habits.length),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, bool isDark) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -538,7 +566,7 @@ class HomeScreen extends StatelessWidget {
             'Appuie sur + pour créer ta première habitude',
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: AppTheme.lightTextSecondary,
+              color: isDark ? Colors.grey[400] : AppTheme.lightTextSecondary,
             ),
           ),
         ],
@@ -549,14 +577,13 @@ class HomeScreen extends StatelessWidget {
   Widget _buildBottomNav(BuildContext context, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF121212) : Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+        color: isDark ? const Color(0xFF0A0A0A) : Colors.white,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+            width: 1,
           ),
-        ],
+        ),
       ),
       child: SafeArea(
         child: Padding(
@@ -564,11 +591,38 @@ class HomeScreen extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(context, Icons.home, 'Accueil', true),
-              _buildNavItem(context, Icons.bar_chart, 'Statistiques', false),
+              _buildNavItem(context, Icons.home, 'Accueil', true, isDark, null),
+              _buildNavItem(
+                context,
+                Icons.bar_chart_rounded,
+                'Stats',
+                false,
+                isDark,
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AnalyticsScreen()),
+                ),
+              ),
               const SizedBox(width: 50),
-              _buildNavItem(context, Icons.people_outline, 'Cercles', false),
-              _buildNavItem(context, Icons.person_outline, 'Profil', false),
+              _buildNavItem(
+                context,
+                Icons.people_outline,
+                'Cercles',
+                false,
+                isDark,
+                null, // TODO: CirclesScreen
+              ),
+              _buildNavItem(
+                context,
+                Icons.person_outline,
+                'Profil',
+                false,
+                isDark,
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                ),
+              ),
             ],
           ),
         ),
@@ -581,37 +635,34 @@ class HomeScreen extends StatelessWidget {
     IconData icon,
     String label,
     bool isActive,
+    bool isDark,
+    VoidCallback? onTap,
   ) {
-    final theme = Theme.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isActive
-              ? AppTheme.accentBlue
-              : theme.textTheme.bodyMedium?.color,
-          size: 22,
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 10,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
             color: isActive
-                ? AppTheme.accentBlue
-                : theme.textTheme.bodyMedium?.color,
+                ? (isDark ? Colors.white : AppTheme.lightText)
+                : (isDark ? Colors.grey[600] : Colors.grey[400]),
+            size: 22,
           ),
-        ),
-      ],
-    );
-  }
-
-  void _navigateToAddHabit(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const AddHabitScreen()),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+              color: isActive
+                  ? (isDark ? Colors.white : AppTheme.lightText)
+                  : (isDark ? Colors.grey[600] : Colors.grey[400]),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -620,22 +671,34 @@ class HomeScreen extends StatelessWidget {
     Habit habit,
     HabitProvider provider,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Supprimer l\'habitude'),
+        backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Supprimer l\'habitude',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+        ),
         content: Text('Voulez-vous vraiment supprimer "${habit.name}" ?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Annuler'),
+            child: Text(
+              'Annuler',
+              style: TextStyle(
+                color: isDark ? Colors.grey[400] : AppTheme.lightTextSecondary,
+              ),
+            ),
           ),
           TextButton(
             onPressed: () {
               provider.deleteHabit(habit.id);
               Navigator.pop(context);
             },
-            child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+            child: Text('Supprimer', style: TextStyle(color: Colors.red[400])),
           ),
         ],
       ),

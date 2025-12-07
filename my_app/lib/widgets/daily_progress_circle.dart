@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 
-/// Daily progress circle widget inspired by the provided designs
-/// Shows percentage completion with circular progress indicator
+/// Daily progress circle widget - minimalist style
 class DailyProgressCircle extends StatelessWidget {
   final int completed;
   final int total;
@@ -36,7 +35,7 @@ class DailyProgressCircle extends StatelessWidget {
             height: size,
             child: CircularProgressIndicator(
               value: 1.0,
-              strokeWidth: 10,
+              strokeWidth: 8,
               backgroundColor: Colors.transparent,
               valueColor: AlwaysStoppedAnimation<Color>(
                 isDark ? Colors.grey[800]! : Colors.grey[200]!,
@@ -49,13 +48,11 @@ class DailyProgressCircle extends StatelessWidget {
             height: size,
             child: CircularProgressIndicator(
               value: _progress,
-              strokeWidth: 10,
+              strokeWidth: 8,
               strokeCap: StrokeCap.round,
               backgroundColor: Colors.transparent,
               valueColor: AlwaysStoppedAnimation<Color>(
-                _progress >= 1.0
-                    ? AppTheme.statusCompleted
-                    : AppTheme.accentBlue,
+                isDark ? Colors.white : AppTheme.lightText,
               ),
             ),
           ),
@@ -66,16 +63,18 @@ class DailyProgressCircle extends StatelessWidget {
               Text(
                 '$_percentage%',
                 style: GoogleFonts.inter(
-                  fontSize: size * 0.25,
-                  fontWeight: FontWeight.bold,
-                  color: theme.textTheme.bodyLarge?.color,
+                  fontSize: size * 0.22,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : AppTheme.lightText,
                 ),
               ),
               Text(
                 'Complété',
                 style: GoogleFonts.inter(
-                  fontSize: size * 0.1,
-                  color: theme.textTheme.bodyMedium?.color,
+                  fontSize: size * 0.09,
+                  color: isDark
+                      ? Colors.grey[400]
+                      : AppTheme.lightTextSecondary,
                 ),
               ),
             ],
