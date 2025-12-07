@@ -50,13 +50,13 @@ class WelcomeBackScreen extends StatelessWidget {
                       width: 120,
                       height: 120,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6C5CE7).withValues(alpha: 0.1),
+                        color: const Color(0xFF12172A).withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.waving_hand,
                         size: 60,
-                        color: Color(0xFF6C5CE7),
+                        color: Color(0xFF12172A),
                       ),
                     ),
                   ),
@@ -130,7 +130,7 @@ class WelcomeBackScreen extends StatelessWidget {
                     const SizedBox(height: 24),
                   ],
 
-                  // Google Sign-In Button
+                  // Google Sign-In Button (same style as auth_screen)
                   GestureDetector(
                     onTap: authProvider.isLoading
                         ? null
@@ -138,17 +138,14 @@ class WelcomeBackScreen extends StatelessWidget {
                     child: Container(
                       height: 56,
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6C5CE7), Color(0xFF8B7CF7)],
-                        ),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(28),
+                        border: Border.all(color: Colors.grey.shade300),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(
-                              0xFF6C5CE7,
-                            ).withValues(alpha: 0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 6),
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
                         ],
                       ),
@@ -159,9 +156,6 @@ class WelcomeBackScreen extends StatelessWidget {
                                 height: 24,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
                                 ),
                               ),
                             )
@@ -176,7 +170,6 @@ class WelcomeBackScreen extends StatelessWidget {
                                     return const Icon(
                                       Icons.g_mobiledata,
                                       size: 24,
-                                      color: Colors.white,
                                     );
                                   },
                                 ),
@@ -185,8 +178,8 @@ class WelcomeBackScreen extends StatelessWidget {
                                   'Se reconnecter avec Google',
                                   style: GoogleFonts.inter(
                                     fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppTheme.lightText,
                                   ),
                                 ),
                               ],
