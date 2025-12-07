@@ -8,7 +8,7 @@ import '../widgets/greeting_header.dart';
 import '../widgets/week_selector.dart';
 import '../widgets/habit_card.dart';
 import 'add_habit_screen.dart';
-import 'auth/auth_screen.dart';
+import 'auth/welcome_back_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -65,7 +65,7 @@ class HomeScreen extends StatelessWidget {
                   navigator.pushAndRemoveUntil(
                     MaterialPageRoute(
                       builder: (_) =>
-                          AuthScreen(nextScreen: const HomeScreen()),
+                          WelcomeBackScreen(nextScreen: const HomeScreen()),
                     ),
                     (route) => false,
                   );

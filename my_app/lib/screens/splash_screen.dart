@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import 'auth/auth_screen.dart';
+import 'auth/welcome_back_screen.dart';
 import 'onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -53,12 +54,14 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateToNextScreen() async {
-    // Check if onboarding is complete
+    // Check settings from Hive
     final box = await Hive.openBox('settings');
     final onboardingComplete = box.get(
       'onboarding_complete',
       defaultValue: false,
     );
+    final hasRegistered = box.get('has_registered', defaultValue: false);
+    final hasLoggedOut = box.get('has_logged_out', defaultValue: false);
 
     if (!mounted) return;
 
@@ -73,12 +76,15 @@ class _SplashScreenState extends State<SplashScreen>
       nextScreen = OnboardingScreen(
         nextScreen: AuthScreen(nextScreen: widget.homeScreen),
       );
-    } else if (!isAuthenticated) {
-      // Returning user but not logged in: show auth
-      nextScreen = AuthScreen(nextScreen: widget.homeScreen);
-    } else {
-      // Logged in user: go to home
+    } else if (isAuthenticated) {
+      // Logged in user: go to home directly
       nextScreen = widget.homeScreen;
+    } else if (hasRegistered && hasLoggedOut) {
+      // User was registered but logged out: show Welcome Back screen
+      nextScreen = WelcomeBackScreen(nextScreen: widget.homeScreen);
+    } else {
+      // Not registered or session expired: show auth screen
+      nextScreen = AuthScreen(nextScreen: widget.homeScreen);
     }
 
     Navigator.of(context).pushReplacement(

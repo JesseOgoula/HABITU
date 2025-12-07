@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
+import '../services/profile_service.dart';
 
 /// Provider for managing authentication state throughout the app
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
+  final ProfileService _profileService = ProfileService();
 
   User? _user;
   bool _isLoading = false;
@@ -159,6 +162,22 @@ class AuthProvider extends ChangeNotifier {
     try {
       final response = await _authService.signInWithGoogle();
       _user = response.user;
+
+      // Save profile to Supabase
+      if (_user != null) {
+        await _profileService.createOrUpdateProfile(
+          id: _user!.id,
+          email: _user!.email,
+          displayName: displayName,
+          avatarUrl: avatarUrl,
+        );
+
+        // Mark as registered and clear logout flag
+        final box = await Hive.openBox('settings');
+        await box.put('has_registered', true);
+        await box.put('has_logged_out', false);
+      }
+
       _isLoading = false;
       notifyListeners();
       return true;
@@ -182,6 +201,10 @@ class AuthProvider extends ChangeNotifier {
       _user = null;
       _pendingPhoneNumber = null;
       _errorMessage = null;
+
+      // Mark as logged out for "Welcome Back" screen
+      final box = await Hive.openBox('settings');
+      await box.put('has_logged_out', true);
     } catch (e) {
       _errorMessage = _parseError(e);
     }
