@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/qualification_service.dart';
 import '../../theme/app_theme.dart';
+import '../onboarding/profile_qualification_screen.dart';
 
 /// Main authentication screen with Google Sign-In
 class AuthScreen extends StatelessWidget {
@@ -13,19 +15,44 @@ class AuthScreen extends StatelessWidget {
   Future<void> _signInWithGoogle(BuildContext context) async {
     final authProvider = context.read<AuthProvider>();
     final navigator = Navigator.of(context);
+    final qualificationService = QualificationService();
+
     final success = await authProvider.signInWithGoogle();
 
-    if (success) {
-      navigator.pushAndRemoveUntil(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 300),
-        ),
-        (route) => false,
+    if (success && authProvider.user != null) {
+      // Check if qualification is complete
+      final isQualified = await qualificationService.isQualificationComplete(
+        authProvider.user!.id,
       );
+
+      if (!isQualified) {
+        // Redirect to qualification screen
+        navigator.pushAndRemoveUntil(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ProfileQualificationScreen(nextScreen: nextScreen),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
+          (route) => false,
+        );
+      } else {
+        // Already qualified, go to home
+        navigator.pushAndRemoveUntil(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
+          (route) => false,
+        );
+      }
     }
   }
 

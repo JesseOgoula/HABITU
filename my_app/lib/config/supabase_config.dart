@@ -13,4 +13,7 @@ class SupabaseConfig {
   /// Google OAuth Web Client ID (required for Google Sign-In)
   static const String googleWebClientId =
       '565966401094-i27o38loicphcachklb7i9o2g60qvgol.apps.googleusercontent.com';
+
+  /// Gemini API Key (for AI recommendations)
+  static const String geminiApiKey = 'AIzaSyDMiyOFtXnCrKY_zdelrE9d5enw9DzOj0E';
 }
