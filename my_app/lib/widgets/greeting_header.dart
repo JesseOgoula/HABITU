@@ -21,14 +21,32 @@ class GreetingHeader extends StatelessWidget {
 
   String get _greeting {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good Morning,';
-    if (hour < 17) return 'Good Afternoon,';
-    return 'Good Evening,';
+    if (hour < 12) return 'Bonjour,';
+    if (hour < 17) return 'Bon après-midi,';
+    return 'Bonsoir,';
   }
 
   String get _todayDate {
     final now = DateTime.now();
-    return 'Today · ${DateFormat('EEE, MMM d').format(now)}';
+    // Format in French
+    const days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+    const months = [
+      'Jan',
+      'Fév',
+      'Mar',
+      'Avr',
+      'Mai',
+      'Juin',
+      'Juil',
+      'Août',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Déc',
+    ];
+    final dayName = days[now.weekday - 1];
+    final monthName = months[now.month - 1];
+    return 'Aujourd\'hui · $dayName, ${now.day} $monthName';
   }
 
   @override
@@ -91,27 +109,15 @@ class GreetingHeader extends StatelessWidget {
       text: TextSpan(
         style: theme.textTheme.bodyMedium,
         children: [
-          const TextSpan(text: "What's ahead today: "),
+          const TextSpan(text: "Aujourd'hui : "),
           _buildBadge(
-            '📅 $meetingsCount meeting${meetingsCount != 1 ? 's' : ''}',
+            '✓ $tasksCount/$habitsCount ${habitsCount != 1 ? 'habitudes' : 'habitude'}',
             context,
           ),
-          const TextSpan(text: ', '),
+          const TextSpan(text: ' et '),
           _buildBadge(
-            '⏱ $tasksCount task${tasksCount != 1 ? 's' : ''}',
+            '🌍 $meetingsCount ${meetingsCount != 1 ? 'cercles' : 'cercle'}',
             context,
-          ),
-          const TextSpan(text: ' and\n'),
-          _buildBadge(
-            '✓ $habitsCount habit${habitsCount != 1 ? 's' : ''}',
-            context,
-          ),
-          const TextSpan(text: '. '),
-          TextSpan(
-            text: 'Clear after 10 pm.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontStyle: FontStyle.italic,
-            ),
           ),
         ],
       ),

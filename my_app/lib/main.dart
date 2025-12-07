@@ -3,8 +3,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
 import 'models/habit.dart';
+import 'models/circle.dart';
 import 'providers/auth_provider.dart';
 import 'providers/habit_provider.dart';
+import 'providers/circle_provider.dart';
 import 'providers/theme_provider.dart';
 import 'services/auth_service.dart';
 import 'theme/app_theme.dart';
@@ -20,15 +22,18 @@ void main() async {
   // Initialize Hive
   await Hive.initFlutter();
   Hive.registerAdapter(HabitAdapter());
+  Hive.registerAdapter(CircleAdapter());
 
   // Initialize providers
   final authProvider = AuthProvider();
   final habitProvider = HabitProvider();
+  final circleProvider = CircleProvider();
   final themeProvider = ThemeProvider();
 
   await Future.wait([
     authProvider.init(),
     habitProvider.init(),
+    circleProvider.init(),
     themeProvider.init(),
   ]);
 
@@ -37,6 +42,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider.value(value: habitProvider),
+        ChangeNotifierProvider.value(value: circleProvider),
         ChangeNotifierProvider.value(value: themeProvider),
       ],
       child: const HabituApp(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
@@ -262,6 +263,25 @@ class WelcomeBackScreen extends StatelessWidget {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Quit button
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        SystemNavigator.pop();
+                      },
+                      child: Text(
+                        'Quitter',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: AppTheme.lightTextSecondary,
+                        ),
+                      ),
                     ),
                   ),
 
