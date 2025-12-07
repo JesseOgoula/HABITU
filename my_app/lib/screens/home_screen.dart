@@ -18,9 +18,41 @@ import 'auth/welcome_back_screen.dart';
 import 'habit_detail_screen.dart';
 import 'analytics_screen.dart';
 import 'profile_screen.dart';
+import 'circles_screen.dart';
+import 'baobab_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Trigger sync after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncData();
+    });
+  }
+
+  Future<void> _syncData() async {
+    final authProvider = context.read<AuthProvider>();
+    final habitProvider = context.read<HabitProvider>();
+    final circleProvider = context.read<CircleProvider>();
+
+    if (authProvider.user != null) {
+      final userId = authProvider.user!.id;
+
+      // Sync habits from cloud
+      await habitProvider.syncFromCloud(userId);
+
+      // Sync circles from cloud
+      await circleProvider.syncFromCloud(userId);
+    }
+  }
 
   void _showProfileMenu(BuildContext context) {
     final authProvider = context.read<AuthProvider>();
@@ -183,8 +215,16 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Streak Banner
-                SliverToBoxAdapter(child: StreakBanner(streak: currentStreak)),
+                // Streak Banner - tap to see Baobab
+                SliverToBoxAdapter(
+                  child: StreakBanner(
+                    streak: currentStreak,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const BaobabScreen()),
+                    ),
+                  ),
+                ),
 
                 // Progress and Stats Row
                 SliverToBoxAdapter(
@@ -610,7 +650,10 @@ class HomeScreen extends StatelessWidget {
                 'Cercles',
                 false,
                 isDark,
-                null, // TODO: CirclesScreen
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CirclesScreen()),
+                ),
               ),
               _buildNavItem(
                 context,

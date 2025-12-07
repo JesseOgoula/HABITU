@@ -25,13 +25,14 @@ class CircleAdapter extends TypeAdapter<Circle> {
       habitIds: (fields[5] as List?)?.cast<String>(),
       emoji: fields[6] as String?,
       createdAt: fields[7] as DateTime?,
+      inviteCode: fields[8] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Circle obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -47,7 +48,9 @@ class CircleAdapter extends TypeAdapter<Circle> {
       ..writeByte(6)
       ..write(obj.emoji)
       ..writeByte(7)
-      ..write(obj.createdAt);
+      ..write(obj.createdAt)
+      ..writeByte(8)
+      ..write(obj.inviteCode);
   }
 
   @override

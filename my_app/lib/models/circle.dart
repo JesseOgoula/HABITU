@@ -30,6 +30,9 @@ class Circle extends HiveObject {
   @HiveField(7)
   DateTime createdAt;
 
+  @HiveField(8)
+  String _inviteCode; // Stored invite code
+
   Circle({
     required this.id,
     required this.name,
@@ -39,9 +42,11 @@ class Circle extends HiveObject {
     List<String>? habitIds,
     this.emoji,
     DateTime? createdAt,
+    String? inviteCode,
   }) : memberIds = memberIds ?? [creatorId],
        habitIds = habitIds ?? [],
-       createdAt = createdAt ?? DateTime.now();
+       createdAt = createdAt ?? DateTime.now(),
+       _inviteCode = inviteCode ?? '';
 
   /// Get member count
   int get memberCount => memberIds.length;
@@ -76,8 +81,9 @@ class Circle extends HiveObject {
     }
   }
 
-  /// Generate an invite code (simplified - in production use a proper system)
-  String get inviteCode => id.substring(0, 8).toUpperCase();
+  /// Get or generate invite code
+  String get inviteCode =>
+      _inviteCode.isNotEmpty ? _inviteCode : id.substring(0, 8).toUpperCase();
 
   Circle copyWith({
     String? id,
@@ -88,6 +94,7 @@ class Circle extends HiveObject {
     List<String>? habitIds,
     String? emoji,
     DateTime? createdAt,
+    String? inviteCode,
   }) {
     return Circle(
       id: id ?? this.id,
@@ -98,6 +105,7 @@ class Circle extends HiveObject {
       habitIds: habitIds ?? List.from(this.habitIds),
       emoji: emoji ?? this.emoji,
       createdAt: createdAt ?? this.createdAt,
+      inviteCode: inviteCode ?? _inviteCode,
     );
   }
 }

@@ -41,8 +41,7 @@ class HabitDetailScreen extends StatelessWidget {
   double get _successRate {
     // Calculate based on days since first completion
     if (habit.completedDates.isEmpty) return 0;
-    final now = DateTime.now();
-    final daysSinceStart = 30; // Assume 30 days for now
+    const daysSinceStart = 30; // Assume 30 days for now
     return (_totalCompletions / daysSinceStart * 100).clamp(0, 100);
   }
 

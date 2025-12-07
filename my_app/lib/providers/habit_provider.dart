@@ -138,4 +138,21 @@ class HabitProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  /// Sync from cloud (called externally)
+  Future<void> syncFromCloud(String userId) async {
+    if (_syncState == SyncState.syncing) return;
+
+    _syncState = SyncState.syncing;
+    notifyListeners();
+
+    try {
+      await _syncService.pullFromCloud();
+      _syncState = SyncState.synced;
+    } catch (e) {
+      _syncState = SyncState.error;
+      _syncErrorMessage = e.toString();
+    }
+    notifyListeners();
+  }
 }
